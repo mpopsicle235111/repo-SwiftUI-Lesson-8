@@ -13,6 +13,10 @@ struct PhotosView: View {
     @EnvironmentObject var showPhotosState: ShowPhotosState
     @ObservedObject var viewModel: PhotosViewModel
     
+    //Added for autolayout
+    @State private var calculatedRowHeight: CGFloat? = nil
+    @State private var selectedGridItem: Int? = nil
+    
     init(viewModel: PhotosViewModel) {
         self.viewModel = viewModel
     }
@@ -45,7 +49,7 @@ struct PhotosView: View {
         }
         
         GeometryReader{ geo in
-                ScrollView {
+            ScrollView(.vertical) {
                     //An array of columns: we have 3 items in this array for our 3 columns
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
@@ -53,33 +57,25 @@ struct PhotosView: View {
                         GridItem(.flexible())
                     ], spacing: 3){
                         ForEach(viewModel.photosAPI.sorted(by: { $0.date < $1.date})){ photoAPI in
-                            NavigationLink(destination: PhotoGridView()) {
-
-                                PhotoCellView(photoAPI: photoAPI)
-                                }
-                                .frame(width: geo.size.width/3, height: geo.size.width/3)
-                                .background(Color.gray)
-                                .foregroundColor(Color.white)
+                            PhotoCellView(photoAPI: photoAPI, index: viewModel.photosAPI.sorted(by: { $0.date < $1.date}).index(of: photoAPI), selectedGridItem:   $selectedGridItem)
+                                .frame(height: calculatedRowHeight)
+                                //.background(Color.gray)
+                                //.foregroundColor(Color.white)
                         }
                     }
-                }
             }
-            
-        
-        
-            /*List(viewModel.photosAPI.sorted(by: { $0.date < $1.date})) { photoAPI in
-                NavigationLink(destination: PhotoGridView()) {
-
-                    PhotoCellView(photoAPI: photoAPI)
-                    }
-            
-                }*/
-            .onAppear { viewModel.fetch() }
-         }
+        }
+        .onAppear { viewModel.fetch() }
+        .onPreferenceChange(HeightSelector.self) { height in
+            calculatedRowHeight = height
+        }
+        .overlayPreferenceValue(SelectedItemKey.self) {
+            SelectedFrame(anchor: $0)
+        }
          
     }
     
-    
+}
 
 
 

@@ -23,7 +23,13 @@ struct PhotosResponse: Codable {
 }
 
 // MARK: - Item
-struct PhotoAPI: Codable, Identifiable {
+struct PhotoAPI: Codable, Identifiable, Equatable {
+    
+    //Protocol stub
+    static func == (lhs: PhotoAPI, rhs: PhotoAPI) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
     let albumID, id, date: Int
     let text: String
     let sizes: [Size]
